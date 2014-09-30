@@ -1,0 +1,7 @@
+set(_CATKIN_CURRENT_PACKAGE "eecs295_grpK")
+set(eecs295_grpK_MAINTAINER "rosuser <rosuser@todo.todo>")
+set(eecs295_grpK_DEPRECATED "")
+set(eecs295_grpK_VERSION "0.0.0")
+set(eecs295_grpK_BUILD_DEPENDS "fw_wrapper" "roscpp" "rospy" "std_msgs")
+set(eecs295_grpK_RUN_DEPENDS "fw_wrapper" "roscpp" "rospy" "std_msgs")
+set(eecs295_grpK_BUILDTOOL_DEPENDS "catkin")
