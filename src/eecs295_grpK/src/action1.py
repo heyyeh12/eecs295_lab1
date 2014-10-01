@@ -123,7 +123,6 @@ def danceMotionOne():
 
 ################ danceMotionTwo() ################
 # Dance Motion 2: Twist the leg few times, and do it with the other leg as well
-# why am I craig
 def danceMotionTwo():
 	initRobotPosition()
 
