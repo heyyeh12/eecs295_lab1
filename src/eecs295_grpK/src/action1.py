@@ -5,6 +5,8 @@ import rospy
 from fw_wrapper.srv import *
 import time
 
+# test
+
 # -----------SERVICE DEFINITION-----------
 # allcmd REQUEST DATA
 # ---------
