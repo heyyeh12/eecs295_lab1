@@ -5,8 +5,6 @@ import rospy
 from fw_wrapper.srv import *
 import time
 
-# test
-
 # -----------SERVICE DEFINITION-----------
 # allcmd REQUEST DATA
 # ---------
@@ -93,31 +91,86 @@ def initMotorPosition(motor_ids):
 		else:
 			setMotorTargetPositionWrapper(8, 470)
 
+################ setMotorTargetPositionWrapper() ################
 # A wrapper function for ensuring the motion gets completed before the next one gets run 
 def setMotorTargetPositionWrapper(motor_id, position):
 	setMotorTargetPositionCommand(motor_id, position)
 	while(getIsMotorMovingCommand(motor_id)):
 		rospy.loginfo('motor is moving')
 
+################ danceMotionOne() ################
 # Dance Motion 1: Put an arm in front and wave the hands, then repeat the motion with the other arm & hand.
 def danceMotionOne():
-	setMotorTargetPositionWrapper(5, 750)
-	countWave = 0
+	initRobotPosition()
 
-	while(countWave < 10):
+	setMotorTargetPositionWrapper(5, 750)
+	moveCount = 0
+
+	while(moveCount < 10):
 		setMotorTargetPositionWrapper(7, 550)
 		setMotorTargetPositionWrapper(7, 650)
-		countWave = countWave + 1
+		moveCount = moveCount + 1
 	initMotorPosition([5, 7])
 
 	setMotorTargetPositionWrapper(6, 350)
-	countWave = 0
+	moveCount = 0
 
-	while(countWave < 10):
+	while(moveCount < 10):
 		setMotorTargetPositionWrapper(8, 550) # THIS VALUE MIGHT NEED TO CHANGE DEPENDING ON THE DIRECTION 
 		setMotorTargetPositionWrapper(8, 650) # THIS TOO 
-		countWave = countWave + 1
+		moveCount = moveCount + 1
 	initMotorPosition([6, 8])
+
+################ danceMotionTwo() ################
+# Dance Motion 2: Twist the leg few times, and do it with the other leg as well
+def danceMotionTwo():
+	initRobotPosition()
+
+	moveCount = 0
+
+	while(moveCount < 10):
+		setMotorTargetPositionWrapper(1, 450)
+		setMotorTargetPositionWrapper(1, 574)
+		moveCount = moveCount + 1
+	initMotorPosition(1)
+
+	moveCount = 0
+
+	while(moveCount < 10):
+		setMotorTargetPositionWrapper(2, 450)
+		setMotorTargetPositionWrapper(2, 574)
+		moveCount = moveCount + 1
+	initMotorPosition(2)
+
+################ waveHand() ################
+# Hand Wave Motion: Puts the arm up, waves its hands.
+def waveHand():
+	setMotorTargetPositionWrapper(5, 974)
+	motionCount = 0
+	while(motionCount < 10):
+		setMotorTargetPositionWrapper(7, 550)
+		setMotorTargetPositionWrapper(7, 650)
+		motionCount = motionCount + 1
+		if countWave >= 10:
+			initRobotPosition()
+			break
+
+################ somethingInFront() ################
+# Checks whether something is in front of it
+# Returns boolean value if the IR sensor value reads greater than 100 
+def somethingInFront():
+	if getSensorValue(port) > 100:
+		return True
+	else:
+		return False
+
+################ pauseMotion() ################
+# @ param : time_to_pause (int)
+# Puts the robot into the init position and pauses it for the specified amount of seconds
+def pauseMotion(time_to_pause):
+	initRobotPosition()
+	time.sleep(time_to_pause)
+
 
 # Main function
 if __name__ == "__main__":
@@ -126,7 +179,6 @@ if __name__ == "__main__":
     
     # control loop running at 10hz
     r = rospy.Rate(10) # 10hz
-    # initRobotPosition()
 
     countWave = 0
     countDance = 0
@@ -136,48 +188,25 @@ if __name__ == "__main__":
         # call function to get sensor value
         port = 1
 
-	# Stops all motion when it senses something in front of it	      
-	#if getSensorValue(port) > 300:
-	#	while():
-	#		if getSensorValue(port) < 300:
-	#			break
+		# Stops all motion when it senses something in front of it // TEST THIS WITH THE NEW FIRMWARE WRAPPER
+		if somethingInFront():
+			pauseMotion(5)      
 
-        #rospy.loginfo("Sensor value at port %d: %f", port, sensor_reading)
+		# Initialize
+		if not initDone:
+			initRobotPosition()
+			initDone = True
 
-	# Initialize
-	if not initDone:
-		initRobotPosition()
-		initDone = True
+		# The 'wave hand' motion at the start
+		if not waveDone:
+			waveHand()
+			waveDone = True
 
-	# The 'wave hand' motion at the start
-	if not waveDone:
-		setMotorTargetPositionWrapper(5, 974)
-		while(countWave < 10):
-			setMotorTargetPositionWrapper(7, 550)
-			setMotorTargetPositionWrapper(7, 650)
-			countWave = countWave + 1
-			if countWave >= 10:
-				initRobotPosition()
-				waveDone = True
-				break		
-			rospy.loginfo('countwave: %d', countWave)
+		# Dance Motion 1
+		if waveDone:
+			danceMotionOne()
+			danceMotionTwo()
 	
-	
-
-	# Dance Motion 1
-	if waveDone:
-		danceMotionOne()
-		danceMotionTwo()
-
-		setMotorTargetPositionWrapper(1, 450)
-		setMotorTargetPositionWrapper(2, 574)
-		setMotorTargetPositionWrapper(7, 700)
-		setMotorTargetPositionWrapper(8, 324)
-		setMotorTargetPositionWrapper(1, 574)
-		setMotorTargetPositionWrapper(2, 450)
-		setMotorTargetPositionWrapper(7, 600)
-		setMotorTargetPositionWrapper(8, 374)
-	
-        # sleep to enforce loop rate
-        r.sleep()
+	    # sleep to enforce loop rate
+    	r.sleep()
 
